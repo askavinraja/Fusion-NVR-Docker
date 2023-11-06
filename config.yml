@@ -1,0 +1,305 @@
+# ! Config example - https://github.com/mostlychris/homeassistant/blob/master/frigate.yml
+# mqtt:
+#   # host: ba54d10a.ala.us-east-1.emqxsl.com
+#   host: 172.17.0.2
+
+#   # port: 18083
+#   # tls_insecure: true
+#   user: fusion-mqtt
+#   password: admin123
+# mqtt:
+#   enabled: False
+mqtt:
+  host: 192.168.0.101
+  # host: 192.168.0.134
+  topic_prefix: frigate
+  client_id: frigate
+  user: test
+  password: admin123
+
+rtmp: 
+  enabled: False 
+birdseye: 
+  enabled: False 
+# ffmpeg:
+#   hwaccel_args:
+#     - -hwaccel
+#     -  vaapi
+    # - -hwaccel_device
+    # - /dev/dri/renderD128
+    # - -hwaccel_output_format
+    # - yuv420p
+
+
+# ffmpeg:
+#   hwaccel_args: preset-vaapi
+# Optional: model modifications
+# model:
+  # Optional: path to the model (default: automatic based on detector)
+  # path: /edgetpu_model.tflite
+  # # Optional: path to the labelmap (default: shown below)
+  # labelmap_path: /labelmap.txt
+  # # Required: Object detection model input width (default: shown below)
+  # width: 320
+  # # Required: Object detection model input height (default: shown below)
+  # height: 320
+  # # Optional: Object detection model input colorspace
+  # # Valid values are rgb, bgr, or yuv. (default: shown below)
+  # input_pixel_format: rgb
+  # # Optional: Object detection model input tensor format
+  # # Valid values are nhwc or nchw (default: shown below)
+  # input_tensor: nhwc
+  # Optional: Object detection model type, currently only used with the OpenVINO detector
+  # Valid values are ssd, yolox, yolov5, or yolov8 (default: shown below)
+  # model_type: yolov8
+  # Optional: Label name modifications. These are merged into the standard labelmap.
+  # labelmap:
+  #   2: vehicle
+
+# ffmpeg:
+#   # Optional: global ffmpeg args (default: shown below)
+#   global_args: -hide_banner -loglevel warning -threads 2
+#   # Optional: global hwaccel args (default: shown below)
+#   # NOTE: See hardware acceleration docs for your specific device
+#   hwaccel_args: preset-vaapi
+#   # Optional: global input args (default: shown below)
+#   input_args: preset-rtsp-generic
+#   # Optional: global output args
+#   output_args:
+#     # Optional: output args for detect streams (default: shown below)
+#     detect: -threads 2 -f rawvideo -pix_fmt yuv420p
+#     # Optional: output args for record streams (default: shown below)
+#     record: preset-record-generic
+#     # Optional: output args for rtmp streams (default: shown below)
+#     rtmp: preset-rtmp-generic
+
+detectors:
+  # Required: name of the detector
+  # person_custom:
+  #   # Required: type of the detector
+  #   # Frigate provided types include 'cpu', 'edgetpu', and 'openvino' (default: shown below)
+  #   # Additional detector types can also be plugged in.
+  #   # Detectors may require additional configuration.
+  #   # Refer to the Detectors configuration page for more information.
+  #   type: cpu
+  coral:
+    type: edgetpu
+    device: usb
+
+cameras:
+  tiruppur-cam0:
+    ffmpeg:
+      inputs:
+        - path: rtsp://admin:123456@103.168.241.93:554/Streaming/channels/1
+          roles:
+            - rtmp
+    detect:
+      width: 1080
+      height: 720
+       
+      fps: 5
+    objects:
+      track:
+        - person
+        - dog
+        - bicycle
+        - cat
+        - car
+      filters:
+        car:
+          min_area: 15000
+          mask: 1241,1043,1879,1045,1873,973,1232,968
+        person:
+          min_area: 500
+    snapshots:
+      enabled: true
+      timestamp: true
+      bounding_box: true
+      crop: True
+      height: 500
+    
+    # mqtt:
+    #   # Optional: Enable publishing snapshot via mqtt for camera (default: shown below)
+    #   # NOTE: Only applies to publishing image data to MQTT via 'frigate/<camera_name>/<object_name>/snapshot'.
+    #   # All other messages will still be published.
+    #   enabled: True
+    #   # Optional: print a timestamp on the snapshots (default: shown below)
+    #   timestamp: True
+    #   # Optional: draw bounding box on the snapshots (default: shown below)
+    #   bounding_box: True
+    #   # Optional: crop the snapshot (default: shown below)
+    #   crop: True
+    #   # Optional: height to resize the snapshot to (default: shown below)
+    #   height: 270
+    #   # Optional: jpeg encode quality (default: shown below)
+    #   quality: 70
+    #   # Optional: Restrict mqtt messages to objects that entered any of the listed zones (default: no required zones)
+    #   required_zones: []
+      
+    record:
+      enabled: False
+      retain:
+        days: 0
+      events:
+        retain:
+          default: 5
+          mode: motion
+        pre_capture: 5
+        post_capture: 15
+
+  tiruppur-cam1:
+    ffmpeg:
+      inputs:
+        - path: rtsp://admin:123456@103.168.241.93:554/Streaming/channels/1
+          roles:
+            - rtmp
+    detect:
+      width: 1080
+      height: 720
+      fps: 5
+    objects:
+      track:
+        - person
+        - dog
+        - bicycle
+        - cat
+        - car
+      filters:
+        car:
+          min_area: 15000
+        person:
+          min_area: 500
+    snapshots:
+      enabled: true
+      timestamp: true
+      bounding_box: true
+      crop: True
+      height: 500
+    record:
+      enabled: False
+      retain:
+        days: 0
+      events:
+        retain:
+          default: 5
+          mode: motion
+        pre_capture: 5
+        post_capture: 15
+        
+  tiruppur-cam2:
+    ffmpeg:
+      inputs:
+        - path: rtsp://admin:123456@103.168.241.93:554/Streaming/channels/1
+          roles:
+            - rtmp
+    detect:
+      width: 1080
+      height: 720
+      fps: 5
+    objects:
+      track:
+        - person
+        - dog
+        - bicycle
+        - cat
+        - car
+      filters:
+        car:
+          min_area: 15000
+        person:
+          min_area: 500
+    snapshots:
+      enabled: true
+      timestamp: true
+      bounding_box: true
+      crop: True
+      height: 500
+    record:
+      enabled: False
+      retain:
+        days: 0
+      events:
+        retain:
+          default: 5
+          mode: motion
+        pre_capture: 5
+        post_capture: 15
+
+  tiruppur-cam3-face:
+      ffmpeg:
+        inputs:
+          - path: rtsp://103.168.241.93:555/live/0/MAIN
+            roles:
+              - rtmp
+      detect:
+        width: 1080
+        height: 720
+        fps: 5
+      objects:
+        track:
+          - person
+        filters:
+          person:
+            min_area: 500
+            mask:
+            - 572,111,594,251,506,251,486,113
+      snapshots:
+        enabled: true
+        timestamp: true
+        bounding_box: true
+        crop: True
+        height: 500
+      zones:
+        entry:
+          coordinates: 280,252,286,480,152,446,162,254
+        front-desk:
+          coordinates: 289,134,318,306,490,303,478,151
+      record:
+        enabled: False
+        retain:
+          days: 0
+        events:
+          retain:
+            default: 5
+            mode: motion
+          pre_capture: 5
+          post_capture: 15
+
+
+
+
+# Optional: Detect configuration
+# NOTE: Can be overridden at the camera level
+# detect:
+#   # Optional: width of the frame for the input with the detect role (default: shown below)
+#   width: 1280
+#   # Optional: height of the frame for the input with the detect role (default: shown below)
+#   height: 720
+#   # Optional: desired fps for your camera for the input with the detect role (default: shown below)
+#   # NOTE: Recommended value of 5. Ideally, try and reduce your FPS on the camera.
+#   fps: 5
+#   # Optional: enables detection for the camera (default: True)
+#   enabled: True
+#   # Optional: Number of frames without a detection before Frigate considers an object to be gone. (default: 5x the frame rate)
+#   max_disappeared: 25
+#   # Optional: Configuration for stationary object tracking
+#   stationary:
+#     # Optional: Frequency for confirming stationary objects (default: shown below)
+#     # When set to 0, object detection will not confirm stationary objects until movement is detected.
+#     # If set to 10, object detection will run to confirm the object still exists on every 10th frame.
+#     interval: 0
+#     # Optional: Number of frames without a position change for an object to be considered stationary (default: 10x the frame rate or 10s)
+#     threshold: 50
+#     # Optional: Define a maximum number of frames for tracking a stationary object (default: not set, track forever)
+#     # This can help with false positives for objects that should only be stationary for a limited amount of time.
+#     # It can also be used to disable stationary object tracking. For example, you may want to set a value for person, but leave
+#     # car at the default.
+#     # WARNING: Setting these values overrides default behavior and disables stationary object tracking.
+#     #          There are very few situations where you would want it disabled. It is NOT recommended to
+#     #          copy these values from the example config into your config unless you know they are needed.
+#     max_frames:
+#       # Optional: Default for all object types (default: not set, track forever)
+#       default: 3000
+#       # Optional: Object specific values
+#       objects:
+#         person: 1000

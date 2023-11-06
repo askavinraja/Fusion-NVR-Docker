@@ -1,0 +1,62 @@
+#? REFER THIS FOR MORE INFO SETTING UP MQTT AND FRIGATE
+# https://gist.github.com/TaylorBurnham/b53f24083d6030947804db8e96a4da7c
+version: "3.9"
+services:
+  # mqtt:
+  #   container_name: mqtt
+  #   image: eclipse-mosquitto
+  #   volumes:
+  #     # - ./mosquitto/logs/:/mosquitto/logs/
+  #     - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+  #     - ./mqtt-auth.conf:/mosquitto/config/mqtt-auth.conf
+  #     - ./mqtt-acl.conf:/mosquitto/config/mqtt-acl.conf
+  #   restart: unless-stopped
+  #   networks:
+  #     - frigate
+  #   ports:
+  #     - 1883:1883
+  mqtt-emqx:
+    image: emqx/emqx
+    container_name: emqx
+    ports:
+      - 1883:1883
+      - 8083:8083
+      - 8084:8084
+      - 8883:8883
+      - 18083:18083 
+
+  frigate:
+    container_name: frigate
+    networks:
+      - frigate
+    privileged: true # this may not be necessary for all setups
+    restart: unless-stopped
+    image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "256mb" # update for your cameras based on calculation above
+    depends_on:
+      - mqtt-emqx
+    devices:
+      # - /dev/bus/usb:/dev/bus/usb # passes the USB Coral, needs to be modified for other versions
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    #   - /dev/apex_0:/dev/apex_0 # passes a PCIe Coral, follow driver instructions here https://coral.ai/docs/m2/get-started/#2a-on-linux
+    #   - /dev/dri/renderD128 # for intel hwaccel, needs to be updated for your hardware
+    volumes:
+      # - /dev/bus/usb:/dev/bus/usb # passes the USB Coral, needs to be modified for other versions
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /etc/localtime:/etc/localtime:ro
+      - /e/Fusion-NVR-VM/Frigate-Docker/config.yml:/config/config.yml
+      - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "5000:5000"
+      # - "5001:5001"
+      - "8554:8554" # RTSP feeds
+      - "8555:8555/tcp" # WebRTC over tcp
+      - "8555:8555/udp" # WebRTC over udp
+    environment:
+      FRIGATE_RTSP_PASSWORD: "password"
+
+networks:
+  frigate:
