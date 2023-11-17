@@ -17,7 +17,7 @@ services:
   #     - 1883:1883
   mqtt-emqx:
     image: emqx/emqx
-    container_name: emqx
+    container_name: emqx-frigate
     ports:
       - 1883:1883
       - 8083:8083
@@ -25,10 +25,20 @@ services:
       - 8883:8883
       - 18083:18083 
 
-  frigate:
-    container_name: frigate
+  double-take:
+    container_name: double-take
+    image: jakowenko/double-take
+    restart: unless-stopped
+    volumes:
+      - /double-take:/.storage
+    ports:
+      - 3000:3000
+
+
+  fusion-nvr:
+    container_name: fusion-nvr
     networks:
-      - frigate
+      - fusion-nvr
     privileged: true # this may not be necessary for all setups
     restart: unless-stopped
     image: ghcr.io/blakeblackshear/frigate:stable
@@ -59,4 +69,4 @@ services:
       FRIGATE_RTSP_PASSWORD: "password"
 
 networks:
-  frigate:
+  fusion-nvr:

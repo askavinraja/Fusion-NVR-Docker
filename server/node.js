@@ -7,7 +7,7 @@ const path = require('path');
 // home
 // const mqttBrokerUrl = 'mqtt://192.168.0.101'; // Update with your MQTT broker URL
 // office
-const mqttBrokerUrl = 'mqtt://192.168.0.101'; // Update with your MQTT broker URL
+const mqttBrokerUrl = 'mqtt://192.168.137.1'; // Update with your MQTT broker URL
 const mqttTopic = 'frigate/events'; // Update with the MQTT topic you want to subscribe to
 const username = 'test'; // Update with your MQTT username
 const password = 'admin123'; // Update with your MQTT password
@@ -18,7 +18,11 @@ const client = mqtt.connect(mqttBrokerUrl, {
 });
 
 const apiConfig = {
-  apiUrl: "https://webhook.site/05415457-fa9e-4274-a458-213aa04ab1be"
+  // apiUrl: "https://webhook.site/05415457-fa9e-4274-a458-213aa04ab1be"
+  // apiUrl: "https://webhook.site/bb07ba39-c797-43b0-936e-d96ec09378e3",
+  // apiUrl:"http://192.168.0.142:3000/unidentified",
+  "apiUrl":"https://fivekcars-api.onrender.com",
+  vehicleApiUrl: "https://webhook.site/bb07ba39-c797-43b0-936e-d96ec09378e3"
 };
 
 // create a event queue
@@ -89,7 +93,12 @@ setInterval(() => {
             formData.append('response', JSON.stringify(event));
             // Append other event fields as needed
             // await sendEventToApi(event);
+            if(event.label=="car")
+            {
+              await sendVehicleEventToApiFormData(formData)
+            }else{
             await sendEventToApiFormData(formData)
+            }
             // fs.unlinkSync(snapshotFileName); // Delete the temporary image file
           });
         })
@@ -114,6 +123,19 @@ function sendEventToApi(eventData) {
 
 function sendEventToApiFormData(eventData) {
   axios.post(apiConfig.apiUrl, eventData, {
+    headers: {
+      ...eventData.getHeaders(),
+    },
+  })
+    .then(response => {
+      console.log('Data sent to API:', eventData);
+    })
+    .catch(error => {
+      console.error('Error sending data to API:', error);
+    });
+}
+function sendVehicleEventToApiFormData(eventData) {
+  axios.post(apiConfig.vehicleApiUrl, eventData, {
     headers: {
       ...eventData.getHeaders(),
     },

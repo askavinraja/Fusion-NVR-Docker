@@ -10,7 +10,7 @@
 # mqtt:
 #   enabled: False
 mqtt:
-  host: 192.168.0.101
+  host: 192.168.137.1
   # host: 192.168.0.134
   topic_prefix: frigate
   client_id: frigate
@@ -73,7 +73,7 @@ birdseye:
 #     # Optional: output args for rtmp streams (default: shown below)
 #     rtmp: preset-rtmp-generic
 
-detectors:
+# detectors:
   # Required: name of the detector
   # person_custom:
   #   # Required: type of the detector
@@ -82,9 +82,9 @@ detectors:
   #   # Detectors may require additional configuration.
   #   # Refer to the Detectors configuration page for more information.
   #   type: cpu
-  coral:
-    type: edgetpu
-    device: usb
+  # coral:
+  #   type: edgetpu
+  #   device: usb
 
 cameras:
   tiruppur-cam0:

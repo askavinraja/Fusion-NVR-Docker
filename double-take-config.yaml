@@ -1,0 +1,119 @@
+# Double Take
+# Learn more at https://github.com/jakowenko/double-take/#configuration
+mqtt:
+  host: 192.168.0.126
+  user: test
+  password: admin123
+  
+save: 
+  matches: true
+  unknown: true
+  
+
+# frigate settings (default: shown below)
+frigate:
+  url: http://192.168.0.126:5000
+
+  # if double take should send matches back to frigate as a sub label
+  # NOTE: requires frigate 0.11.0+
+  update_sub_labels: true
+
+  # stop the processing loop if a match is found
+  # if set to false all image attempts will be processed before determining the best match
+  stop_on_match: true
+
+  # ignore detected areas so small that face recognition would be difficult
+  # quadrupling the min_area of the detector is a good start
+  # does not apply to MQTT events
+  min_area: 0
+
+  # object labels that are allowed for facial recognition
+  labels:
+    - person
+
+  attempts:
+    # number of times double take will request a frigate latest.jpg for facial recognition
+    latest: 10
+    # number of times double take will request a frigate snapshot.jpg for facial recognition
+    snapshot: 10
+    # process frigate images from frigate/+/person/snapshot topics
+    mqtt: true
+    # add a delay expressed in seconds between each detection loop
+    delay: 0
+
+  image:
+    # height of frigate image passed for facial recognition
+    height: 500
+
+  # only process images from specific cameras
+  cameras:
+    # - front-door
+      - tiruppur-cam3-face
+      - tiruppur-cam4-face
+      - tiruppur-cam0
+      - tiruppur-cam1
+      - tiruppur-cam2
+    # - garage
+
+  # only process images from specific zones
+  # zones:
+    # - camera: garage
+    #   zone: driveway
+
+  # override frigate attempts and image per camera
+  # events:
+    # front-door:
+    #   attempts:
+    #     # number of times double take will request a frigate latest.jpg for facial recognition
+    #     latest: 5
+    #     # number of times double take will request a frigate snapshot.jpg for facial recognition
+    #     snapshot: 5
+    #     # process frigate images from frigate/<camera-name>/person/snapshot topic
+    #     mqtt: false
+    #     # add a delay expressed in seconds between each detection loop
+    #     delay: 1
+
+    #   image:
+    #     # height of frigate image passed for facial recognition (only if using default latest.jpg and snapshot.jpg)
+    #     height: 1000
+    #     # custom image that will be used in place of latest.jpg
+    #     latest: http://camera-url.com/image.jpg
+    #     # custom image that will be used in place of snapshot.jpg
+    #     snapshot: http://camera-url.com/image.jpg
+    
+# detector settings (default: shown below)
+detectors:
+  compreface:
+    url: http://192.168.0.126:8000
+    # recognition api key
+    key: 33310cbf-c7c5-416a-9537-90d79fac4bf6
+    # number of seconds before the request times out and is aborted
+    timeout: 15
+    # minimum required confidence that a recognized face is actually a face
+    # value is between 0.0 and 1.0
+    det_prob_threshold: 0.8
+    # require opencv to find a face before processing with detector
+    opencv_face_required: false
+    # comma-separated slugs of face plugins
+    # https://github.com/exadel-inc/CompreFace/blob/master/docs/Face-services-and-plugins.md)
+    # face_plugins: mask,gender,age
+    # only process images from specific cameras, if omitted then all cameras will be processed
+    cameras:
+    # - front-door
+      - tiruppur-cam3-face
+      - tiruppur-cam4-face
+      - tiruppur-cam0
+      - tiruppur-cam1
+      - tiruppur-cam2
+  
+# camera: 
+#   tiruppur-cam0:
+
+topics:
+    # mqtt topic for frigate message subscription
+    frigate: frigate/events
+    # mqtt topic where matches are published by name
+    matches: double-take/matches
+    # mqtt topic where matches are published by camera name
+    cameras: double-take/cameras
+  
